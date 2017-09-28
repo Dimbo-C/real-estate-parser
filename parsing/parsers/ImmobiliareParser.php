@@ -7,7 +7,8 @@ use GuzzleHttp\Client;
 use Symfony\Component\DomCrawler\Crawler;
 use Stichoza\GoogleTranslate\TranslateClient;
 
-class ImmobiliareParser implements Parsable {
+class ImmobiliareParser implements Parsable
+{
     private $detailsRu;
     private $clientRu;
     private $crawlerRu;
@@ -18,14 +19,15 @@ class ImmobiliareParser implements Parsable {
     private $translator;
     private $resultingLang;
 
-    public function __construct($link, $resultingLang = "ru") {
+    public function __construct($link, $resultingLang = "ru")
+    {
         //get everything after / in URL
         //        $this->link = substr($link, strrpos($link, '/') + 1);
         $this->link = explode(".it/", $link)[1];
 
         // guzzle client for ru version
         $this->clientRu = new Client([
-                'base_uri' => 'http://nedvizhimost-italii.immobiliare.it/'
+            'base_uri' => 'http://nedvizhimost-italii.immobiliare.it/'
         ]);
 
         $this->detailsRu = $this->clientRu->get($this->link);
@@ -34,7 +36,7 @@ class ImmobiliareParser implements Parsable {
 
         // guzzle client for it version
         $this->clientIt = new Client([
-                'base_uri' => 'http://www.immobiliare.it/'
+            'base_uri' => 'http://www.immobiliare.it/'
         ]);
         $this->detailsIt = $this->clientIt->get($this->link);
         $this->detailsIt = $this->detailsIt->getBody()->getContents();
@@ -42,26 +44,33 @@ class ImmobiliareParser implements Parsable {
 
         // instantiate translator
         $this->translator = new TranslateClient('it', 'ru');
+        $this->resultingLang = $resultingLang;
 
-        dd($this->getTitleElem(), true);
+//        dd($this->getTitleElem(), true);
     }
 
-    public function getDetails() {
+    public function getDetails()
+    {
         return $this->detailsRu;
     }
 
-    public function getTitle() {
+    public function getTitle()
+    {
         $title = $this->getTitleElem();
         $words = [
-                "ru" => ["Объект №", "в"],
-                "en" => ["Object №", "in"]
+            "ru" => ["Объект №", "в"],
+            "en" => ["Object №", "in"]
         ];
 
-        return $words[$this->resultingLang][0] . ' ' . trim($title['type']) . ' '
-                . $words[$this->resultingLang][1] . ' ' . ucfirst(trim($title['address']));
+//        dd($title,true);
+//        return $words[$this->resultingLang][0] . ' ' . trim($title['type']) . ' '
+//            . $words[$this->resultingLang][1] . ' ' . ucfirst(trim($title['address']));
+        return $words[$this->resultingLang][0] . ' ' . trim(' ') . ' '
+            . $words[$this->resultingLang][1] . ' ' . ucfirst(trim($title['address']));
     }
 
-    private function getTitleElem() {
+    private function getTitleElem()
+    {
         // get address from breadcrumbs
         $crumbs = $this->crawlerIt->filter('ol.breadcrumb');
         $main = $crumbs->children()->eq(0)->text();
@@ -92,7 +101,7 @@ class ImmobiliareParser implements Parsable {
         if (array_key_exists("Tipologia", $keyValArray)) {
             $title['type'] = $keyValArray['Tipologia'];
         } else {
-            $tipology=$this->crawlerIt->filter('div#tipologia tbody')->text();
+            $tipology = $this->crawlerIt->filter('div#tipologia tbody')->text();
             $title['type'] = $tipology;
         }
 
@@ -101,7 +110,8 @@ class ImmobiliareParser implements Parsable {
     }
 
     // get attributes for table with attributes
-    public function getAttributes() {
+    public function getAttributes()
+    {
         // fetch price
         $price = $this->getPrice();
         $price = trim(ltrim($price, '€')) . ' €';
@@ -155,18 +165,18 @@ class ImmobiliareParser implements Parsable {
 
         // array for resulting table
         $result = array(
-                'Цена' => isset($price) ? $price : '',
-                'Площадь' => isset($sqare) ? $sqare . 'кв.м' : '',
-                'Комнаты' => isset($room) ? $room : '',
-                'Ванные' => isset($bath) ? $bath : '',
-                'Состояние' => isset($state) ? $state : '',
-                'Этаж' => isset($floor) ? $floor : '',
-                'Гараж' => isset($garage) ? $garage : '',
-                'Вид на воду' => '',
-                'Отопление' => isset($warm) ? $warm : '',
+            'Цена' => isset($price) ? $price : '',
+            'Площадь' => isset($sqare) ? $sqare . 'кв.м' : '',
+            'Комнаты' => isset($room) ? $room : '',
+            'Ванные' => isset($bath) ? $bath : '',
+            'Состояние' => isset($state) ? $state : '',
+            'Этаж' => isset($floor) ? $floor : '',
+            'Гараж' => isset($garage) ? $garage : '',
+            'Вид на воду' => '',
+            'Отопление' => isset($warm) ? $warm : '',
             //            'Кондиционер' => isset($condi)? $condi : '',
-                'Год постройки' => isset($year) ? $year : '',
-                'Жилищные расходы' => isset($costs) ? $costs : ''
+            'Год постройки' => isset($year) ? $year : '',
+            'Жилищные расходы' => isset($costs) ? $costs : ''
         );
 
         // loop through characteristics and mark them as "yes" (да). And fix some incorrect translations
@@ -183,15 +193,19 @@ class ImmobiliareParser implements Parsable {
     }
 
     // get price from russian site
-    public function getPrice() {
-        $titleElem = $this->crawlerRu->filter('div#prezzoImmobile strong.h3')->text();
-        $price = explode(':', $titleElem);
-
-        return trim($price[1]);
+    public function getPrice()
+    {
+//        $titleElem = $this->crawlerRu->filter('div#prezzoImmobile strong.h3')->text();
+//        $price = explode(':', $titleElem);
+//
+//        return trim($price[1]);
+        $price = $this->crawlerIt->filter('li.features__price > span')->text();
+        return trim($price);
     }
 
     // fetch IT description and translate it to ru
-    public function getDescription() {
+    public function getDescription()
+    {
         $textIt = $this->crawlerIt->filter('div.description-text')->text();
         $textRu = $this->translator->translate($textIt);
         $textRu = trim(preg_replace('/\s+/', ' ', $textRu));
@@ -200,36 +214,20 @@ class ImmobiliareParser implements Parsable {
     }
 
     // get images from rus
-    public function getImages() {
-        // get image block
-        $images = [];
-        $imageBlock = $this->crawlerRu->filter('div#thumbs-mask');
-        foreach ($imageBlock->children() as $div) {
-            // get image id from thumbnails
-            $crawlerDiv = new Crawler($div);
-            $imgId = $crawlerDiv->filter('div.box_thumb')->attr('data-idimg');
-            if ($imgId != '') {
-                // construct image url with ID
-                $images[] = "http://pic.im-cdn.it/image/$imgId/print.jpg";
-            }
+    public function getImages()
+    {
+        $media_json = json_decode($this->crawlerIt->filter('script#js-hydration')->text());
+        $images = array();
+        foreach ($media_json->multimedia->immagini->list as $image) {
+            $images[] = $image->srcSet->large;
         }
-
-        // if there is a plan of building - fetch it too
-        if ($this->crawlerIt->filter('div#planimetria')->count() > 0) {
-            $planBlock = $this->crawlerIt->filter('div#planimetria > div.container-carousel > div.showcase > div.showcase__list');
-            foreach ($planBlock->children() as $img) {
-                $crawlerImg = new Crawler($img);
-                $img = $crawlerImg->filter('img')->attr('src');
-                if ($img != '') {
-                    $images[] = $img;
-                }
-            }
-        }
+//        dd($images, true);
         return $images;
     }
 
 
-    public function getMap() {
+    public function getMap()
+    {
         // get map address
         $address = $this->crawlerIt->filter('div.maps-address > span > strong')->text();
         $address = trim($address);
@@ -237,11 +235,11 @@ class ImmobiliareParser implements Parsable {
         // get images if maps from google maps
         // with marker, less zoomed
         $map[] = "https://maps.googleapis.com/maps/api/staticmap?center="
-                . getCoordinates($address) . "&markers=color:blue%7Clabel:O%7C"
-                . getCoordinates($address) . "&zoom=11&size=650x300";
+            . getCoordinates($address) . "&markers=color:blue%7Clabel:O%7C"
+            . getCoordinates($address) . "&zoom=11&size=650x300";
         // without marker, more zoomed
         $map[] = "https://maps.googleapis.com/maps/api/staticmap?center="
-                . getCoordinates($address) . "&zoom=15&size=650x300";
+            . getCoordinates($address) . "&zoom=15&size=650x300";
 
         return $map;
     }

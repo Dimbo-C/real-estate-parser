@@ -159,7 +159,7 @@ class DocumentWriter
 
         $this->body->addText(
             $description, $font12, array(
-                'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::START)
+                'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH)
         );
         $this->body->addPageBreak();
     }

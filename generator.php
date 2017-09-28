@@ -10,7 +10,7 @@ if (isset($_POST['url'])) {
     // test
 //    $url = "http://www.casa.it/immobile-appartamento-lazio-roma-31433273";
 //    $url = "http://www.casa.it/immobile-appartamento-lazio-roma-31433273";
-    $url = "https://www.immobiliare.it/nuove_costruzioni/Milano/119207-immobile.html";
+//    $url = "https://www.immobiliare.it/nuove_costruzioni/Milano/119207-immobile.html";
 //    $url = "https://www.immobiliare.it/61518026-Vendita-Appartamento-via-XXV-Aprile-4-Agugliano.html";
 
     $resultLang = isset($_POST['en']) ? "en" : "ru";
@@ -34,6 +34,8 @@ if (isset($_POST['url'])) {
     $docWord->images($document->getImages());
     $docWord->regards();
     $docWord->save();
+
+
 
     $newDoc = 'file.docx';
 
