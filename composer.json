@@ -1,0 +1,10 @@
+{
+  "require": {
+    "phpoffice/phpword": "v0.13.*",
+    "symfony/dom-crawler": "^3.2",
+    "symfony/css-selector": "^3.2",
+    "guzzlehttp/guzzle": "~6.0",
+    "stichoza/google-translate-php": "^3.2",
+    "yandex/translate-api": "1.5.x"
+  }
+}
